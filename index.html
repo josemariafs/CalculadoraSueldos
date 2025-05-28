@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Sueldo Bruto a Neto 2025</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Calculadora de Sueldo Bruto a Neto</h1>
+            <button id="theme-toggle" aria-label="Cambiar tema">🌙</button>
+        </header>
+
+        <main>
+            <section class="form-section">
+                <h2>Datos del Trabajador</h2>
+                <form id="salary-form">
+                    <div class="form-group">
+                        <label for="gross-salary">Sueldo Bruto Anual (€)</label>
+                        <input type="number" 
+                               id="gross-salary" 
+                               name="gross-salary" 
+                               min="0" 
+                               step="0.01" 
+                               required 
+                               aria-required="true">
+                        <span class="error-message" id="gross-salary-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="payments">Número de Pagas</label>
+                        <select id="payments" name="payments" required aria-required="true">
+                            <option value="" disabled selected>Selecciona el número de pagas</option>
+                            <option value="12">12 pagas</option>
+                            <option value="14">14 pagas</option>
+                            <option value="16">16 pagas</option>
+                        </select>
+                        <span class="error-message" id="payments-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="region">Comunidad Autónoma</label>
+                        <select id="region" name="region" required aria-required="true">
+                            <option value="" disabled selected>Selecciona tu comunidad autónoma</option>
+                            <option value="andalucia">Andalucía</option>
+                            <option value="aragon">Aragón</option>
+                            <option value="asturias">Asturias</option>
+                            <option value="baleares">Baleares</option>
+                            <option value="canarias">Canarias</option>
+                            <option value="cantabria">Cantabria</option>
+                            <option value="castilla_leon">Castilla y León</option>
+                            <option value="castilla_mancha">Castilla-La Mancha</option>
+                            <option value="cataluna">Cataluña</option>
+                            <option value="ceuta">Ceuta</option>
+                            <option value="madrid">Comunidad de Madrid</option>
+                            <option value="valencia">Comunidad Valenciana</option>
+                            <option value="extremadura">Extremadura</option>
+                            <option value="galicia">Galicia</option>
+                            <option value="melilla">Melilla</option>
+                            <option value="murcia">Murcia</option>
+                            <option value="navarra">Navarra</option>
+                            <option value="pais_vasco">País Vasco</option>
+                            <option value="rioja">La Rioja</option>
+                        </select>
+                        <span class="error-message" id="region-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Edad</label>
+                        <input type="number" 
+                               id="age" 
+                               name="age" 
+                               min="16" 
+                               max="99" 
+                               required 
+                               aria-required="true">
+                        <span class="error-message" id="age-error"></span>
+                    </div>
+
+                    <button type="submit" class="calculate-btn">Calcular</button>
+                </form>
+            </section>
+
+            <section class="results-section">
+                <h2>Resultados</h2>
+                <div class="results-container">
+                    <div class="result-card">
+                        <h3>Sueldo Bruto</h3>
+                        <p id="gross-result">-</p>
+                    </div>
+                    <div class="result-card">
+                        <h3>Deducciones</h3>
+                        <div id="deductions-list"></div>
+                    </div>
+                    <div class="result-card">
+                        <h3>Sueldo Neto</h3>
+                        <p id="net-result">-</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Datos actualizados a 2025. Fuente: Seguridad Social e IRPF España.</p>
+        </footer>
+    </div>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
