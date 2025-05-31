@@ -3,110 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Sueldo Bruto a Neto 2025</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Calculadora Sueldo Neto 2025: Calcular Salario Mensual</title>
+    <meta name="description" content="La calculadora de sueldo neto permite calcular el tipo de retención y el salario neto. En función de tu situación laboral, familiar y retenciones aplicadas, conocerás el sueldo neto del que dispondrás 2025.">
+    <!-- <link rel="stylesheet" href="css/styles.css"> -->
+    <!-- <link rel="stylesheet" href="css/calculator.css"> -->
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Calculadora de Sueldo Bruto a Neto</h1>
-            <button id="theme-toggle" aria-label="Cambiar tema">🌙</button>
-        </header>
+    <div class="main">
+        <main class="content">
+            <h1>Calculadora de sueldo neto 2025</h1>
 
-        <main>
-            <section class="form-section">
-                <h2>Datos del Trabajador</h2>
-                <form id="salary-form">
-                    <div class="form-group">
-                        <label for="gross-salary">Sueldo Bruto Anual (€)</label>
-                        <input type="number" 
-                               id="gross-salary" 
-                               name="gross-salary" 
-                               min="0" 
-                               step="0.01" 
-                               required 
-                               aria-required="true">
-                        <span class="error-message" id="gross-salary-error"></span>
+            <div class="theme-switcher">
+                <button id="theme-toggle" class="theme-toggle-btn" aria-label="Cambiar tema">
+                    <span class="theme-icon sun">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="5"/>
+                            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                        </svg>
+                    </span>
+                    <span class="theme-icon moon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+
+            <section class="calculator-container">
+                <div class="calculator-form-wrapper">
+                    <div class="calculator-form">
+                        <form id="calculadora" class="form" name="formulario_calculadora_irpf">
+                            <div class="form-group">
+                                <label for="salariobruto">Sueldo bruto anual<span class="required">*</span></label>
+                                <input type="text" name="salario" id="salariobruto" class="input-field">
+                                <span class="error-message" id="error-salariobruto"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tipo de contrato laboral<span class="required">*</span></label>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="general" name="General" value="General">
+                                    <label for="general">General</label>
+                                    <input type="checkbox" id="menosdoce" name="Inferior a 12 meses" value="Inferior a 12 meses">
+                                    <label for="menosdoce">Inferior a 12 meses</label>
+                                </div>
+                                <span class="error-message" id="error-general"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="categoria_profesional">Categoría profesional</label>
+                                <select name="cat_pro" id="categoria_profesional" class="select-field">
+                                    <option value="A" selected>Ingenieros y Licenciados</option>
+                                    <option value="B">Ingenieros Técnicos, Peritos y Ayudantes Titulados</option>
+                                    <option value="C">Jefes Administrativos y de Taller</option>
+                                    <option value="D">Ayudantes no Titulados</option>
+                                    <option value="E">Oficiales Administrativos</option>
+                                    <option value="F">Subalternos</option>
+                                    <option value="G">Auxiliares Administrativos</option>
+                                    <option value="H">Oficiales de primera y segunda</option>
+                                    <option value="I">Oficiales de tercera y Especialistas</option>
+                                    <option value="J">Peones</option>
+                                    <option value="K">Trabajadores menores de dieciocho años</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Número de pagas<span class="required">*</span></label>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="12p" name="12pagas" value="12">
+                                    <label for="12p">12</label>
+                                    <input type="checkbox" id="14p" name="14pagas" value="14">
+                                    <label for="14p">14</label>
+                                </div>
+                                <span class="error-message" id="error-docep"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="movili">Movilidad geográfica</label>
+                                <input type="checkbox" id="movili" name="movilidad" value="Si">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="comunidad_autonoma">Comunidad autónoma</label>
+                                <select name="comunidad_autonoma" id="comunidad_autonoma" class="select-field">
+                                    <option value="1">Andalucía</option>
+                                    <option value="3">Aragón</option>
+                                    <option value="6">Canarias</option>
+                                    <option value="7">Cantabria</option>
+                                    <option value="8">Castilla la Mancha</option>
+                                    <option value="9">Castilla y León</option>
+                                    <option value="10">Cataluña</option>
+                                    <option value="16">Ciudad de Ceuta</option>
+                                    <option value="17">Ciudad de Melilla</option>
+                                    <option value="2">Comunidad de Madrid</option>
+                                    <option value="15">Comunidad Valenciana</option>
+                                    <option value="11">Extremadura</option>
+                                    <option value="12">Galicia</option>
+                                    <option value="5">Islas Baleares</option>
+                                    <option value="14">La Rioja</option>
+                                    <option value="4">Principado de Asturias</option>
+                                    <option value="13">Región de Murcia</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="edad">Edad<span class="required">*</span></label>
+                                <input type="text" name="edad" id="edad" class="input-field">
+                                <span class="error-message" id="error-edad"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="situacion_familiar">Situación familiar</label>
+                                <select name="situacion_fam" id="situacion_familiar" class="select-field">
+                                    <option value="A" selected>Soltero</option>
+                                    <option value="B">Casado</option>
+                                    <option value="C">Otros</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="minusvalia_titular">¿Padeces algún tipo de discapacidad?</label>
+                                <select name="discapacidad" id="minusvalia_titular" class="select-field">
+                                    <option value="A" selected>Sin discapacidad</option>
+                                    <option value="B">Entre el 33% y el 65%</option>
+                                    <option value="C">Igual o superior al 65%</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cargos">Ascendientes y descendientes a cargo</label>
+                                <select name="cargos" id="cargos" class="select-field">
+                                    <option value="0" selected>Ninguno</option>
+                                    <option value="1">1 persona</option>
+                                    <option value="2">2 personas</option>
+                                    <option value="3">3 personas</option>
+                                    <option value="4">4 personas</option>
+                                    <option value="5">5 personas</option>
+                                    <option value="6">6 personas</option>
+                                    <option value="7">7 personas</option>
+                                    <option value="8">8 personas</option>
+                                    <option value="9">9 personas</option>
+                                    <option value="10">10 personas</option>
+                                </select>
+                            </div>
+
+                            <div class="descendientes"></div>
+
+                            <div class="form-group">
+                                <label for="exclusiva">Tiene los hijos en exclusiva a efectos fiscales</label>
+                                <input type="checkbox" id="exclusiva" name="exclusiva" value="Si">
+                            </div>
+
+                            <button type="button" id="calcular_nomina" class="btn-calculate">Calcular</button>
+                        </form>
+
+                        <p class="legal-note">Los campos marcados con <span class="required">*</span> son obligatorios para poder obtener el cálculo.</p>
+                        <p class="legal-note">** El cálculo suministrado es estimado y no vinculante.</p>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="payments">Número de Pagas</label>
-                        <select id="payments" name="payments" required aria-required="true">
-                            <option value="" disabled selected>Selecciona el número de pagas</option>
-                            <option value="12">12 pagas</option>
-                            <option value="14">14 pagas</option>
-                            <option value="16">16 pagas</option>
-                        </select>
-                        <span class="error-message" id="payments-error"></span>
+                <div class="results-wrapper">
+                    <div id="resultados_calculadora_nomina" class="results-container">
+                        <h2>Resultado</h2>
+                        <div id="results-content" style="display: none;">
+                            <div class="results-grid">
+                                <div class="results-column">
+                                    <div class="result-item">
+                                        <label>Sueldo bruto anual</label>
+                                        <input id="bruto" type="text" disabled>
+                                    </div>
+                                    <div class="result-item">
+                                        <label class="highlight">Sueldo neto anual</label>
+                                        <input id="netoa" type="text" disabled>
+                                    </div>
+                                    <div class="result-item">
+                                        <label class="highlight">Sueldo neto mensual</label>
+                                        <input id="netom" type="text" disabled>
+                                    </div>
+                                </div>
+                                <div class="results-column">
+                                    <div class="result-item">
+                                        <label>Cuotas a la S. Social</label>
+                                        <input id="segsocial" type="text" disabled>
+                                    </div>
+                                    <div class="result-item">
+                                        <label>Retenciones</label>
+                                        <input id="irpf" type="text" disabled>
+                                    </div>
+                                    <div class="result-item">
+                                        <label>% Retención</label>
+                                        <input id="retencion" type="text" disabled>
+                                    </div>
+                                </div>
+                                <div class="result-item extra-payments" style="display: none;">
+                                    <label class="highlight">2 Pagas Extra de:</label>
+                                    <input id="pextras" type="text" disabled>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="results-placeholder" class="results-placeholder">
+                            Completa el formulario y haz clic en "Calcular" para ver los resultados
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="region">Comunidad Autónoma</label>
-                        <select id="region" name="region" required aria-required="true">
-                            <option value="" disabled selected>Selecciona tu comunidad autónoma</option>
-                            <option value="andalucia">Andalucía</option>
-                            <option value="aragon">Aragón</option>
-                            <option value="asturias">Asturias</option>
-                            <option value="baleares">Baleares</option>
-                            <option value="canarias">Canarias</option>
-                            <option value="cantabria">Cantabria</option>
-                            <option value="castilla_leon">Castilla y León</option>
-                            <option value="castilla_mancha">Castilla-La Mancha</option>
-                            <option value="cataluna">Cataluña</option>
-                            <option value="ceuta">Ceuta</option>
-                            <option value="madrid">Comunidad de Madrid</option>
-                            <option value="valencia">Comunidad Valenciana</option>
-                            <option value="extremadura">Extremadura</option>
-                            <option value="galicia">Galicia</option>
-                            <option value="melilla">Melilla</option>
-                            <option value="murcia">Murcia</option>
-                            <option value="navarra">Navarra</option>
-                            <option value="pais_vasco">País Vasco</option>
-                            <option value="rioja">La Rioja</option>
-                        </select>
-                        <span class="error-message" id="region-error"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="age">Edad</label>
-                        <input type="number" 
-                               id="age" 
-                               name="age" 
-                               min="16" 
-                               max="99" 
-                               required 
-                               aria-required="true">
-                        <span class="error-message" id="age-error"></span>
-                    </div>
-
-                    <button type="submit" class="calculate-btn">Calcular</button>
-                </form>
+                </div>
             </section>
 
-            <section class="results-section">
-                <h2>Resultados</h2>
-                <div class="results-container">
-                    <div class="result-card">
-                        <h3>Sueldo Bruto</h3>
-                        <p id="gross-result">-</p>
+            <section class="charts-container" id="charts-section" style="display: none;">
+                <h2>Análisis Visual</h2>
+                <div class="charts-grid">
+                    <div class="chart-item">
+                        <h3>Distribución del Salario</h3>
+                        <div id="salaryDistributionChart" class="chart"></div>
                     </div>
-                    <div class="result-card">
-                        <h3>Deducciones</h3>
-                        <div id="deductions-list"></div>
+                    <div class="chart-item">
+                        <h3>Comparativa Mensual vs Anual</h3>
+                        <div id="monthlyComparisonChart" class="chart"></div>
                     </div>
-                    <div class="result-card">
-                        <h3>Sueldo Neto</h3>
-                        <p id="net-result">-</p>
+                    <div class="chart-item">
+                        <h3>Evolución por Tramos IRPF</h3>
+                        <div id="irpfChart" class="chart"></div>
+                    </div>
+                    <div class="chart-item">
+                        <h3>Desglose de Deducciones</h3>
+                        <div id="deductionsChart" class="chart"></div>
                     </div>
                 </div>
             </section>
         </main>
-
-        <footer>
-            <p>Datos actualizados a 2025. Fuente: Seguridad Social e IRPF España.</p>
-        </footer>
     </div>
-    <script src="data.js"></script>
-    <script src="script.js"></script>
+
+    <script src="js/calculator.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/charts.js"></script>
 </body>
-</html>
+</html> 
