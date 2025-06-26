@@ -28,15 +28,38 @@ class SalaryCharts {
 
     getThemeColors() {
         const isDark = this.currentTheme === 'dark';
+        
+        // Obtener colores desde CSS variables
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primary = rootStyles.getPropertyValue('--primary').trim();
+        const secondary = rootStyles.getPropertyValue('--secondary').trim();
+        const tertiary = rootStyles.getPropertyValue('--tertiary').trim();
+        
         return {
             background: isDark ? '#263238' : '#f7f7f7',
             text: isDark ? '#f7f7f7' : '#222',
-            primary: isDark ? '#90caf9' : '#1976d2',
-            secondary: isDark ? '#23272a' : '#e3e3e3',
+            primary: primary || '#1ea8e7',
+            secondary: secondary || '#6cdbef', 
+            tertiary: tertiary || '#5de3c8',
             accent: isDark ? '#ffd600' : '#fbc02d',
             grid: isDark ? '#444' : '#e0e0e0',
             axis: isDark ? '#888' : '#666'
         };
+    }
+
+    // Función auxiliar para obtener paleta de colores para series
+    getSeriesColors() {
+        const colors = this.getThemeColors();
+        return [
+            colors.primary,   // #1ea8e7
+            colors.secondary, // #6cdbef
+            colors.tertiary,  // #5de3c8
+            colors.accent,    // Color de acento
+            '#ff6b6b',        // Rojo para deducciones/gastos
+            '#4ecdc4',        // Verde agua adicional
+            '#45b7d1',        // Azul claro adicional
+            '#96ceb4'         // Verde claro adicional
+        ];
     }
 
     initializeCharts() {
@@ -68,7 +91,8 @@ class SalaryCharts {
         // Configuración base para todos los gráficos
         const baseTextStyle = {
             color: colors.text,
-            fontSize: 12
+            fontSize: 12,
+            fontFamily: 'Montserrat, sans-serif'
         };
 
         // Gráfico de distribución del salario (donut chart)
@@ -148,20 +172,31 @@ class SalaryCharts {
     }
 
     updateSalaryDistributionChart(resultados, colors) {
+        const seriesColors = this.getSeriesColors();
+        
         const option = {
             backgroundColor: 'transparent',
+            textStyle: {
+                fontFamily: 'Montserrat, sans-serif'
+            },
             tooltip: {
                 trigger: 'item',
                 formatter: function(params) {
                     const value = Number(params.value).toFixed(2);
                     const percent = Number(params.percent).toFixed(2);
                     return `${params.seriesName} <br/>${params.name}: ${value} € (${percent}%)`;
+                },
+                textStyle: {
+                    fontFamily: 'Montserrat, sans-serif'
                 }
             },
             legend: {
                 orient: 'vertical',
                 left: 'left',
-                textStyle: { color: colors.text }
+                textStyle: { 
+                    color: colors.text,
+                    fontFamily: 'Montserrat, sans-serif'
+                }
             },
             series: [
                 {
@@ -177,23 +212,25 @@ class SalaryCharts {
                     },
                     label: {
                         show: false,
-                        position: 'center'
+                        position: 'center',
+                        fontFamily: 'Montserrat, sans-serif'
                     },
                     emphasis: {
                         label: {
                             show: true,
                             fontSize: 20,
                             fontWeight: 'bold',
-                            color: colors.text
+                            color: colors.text,
+                            fontFamily: 'Montserrat, sans-serif'
                         }
                     },
                     labelLine: {
                         show: false
                     },
                     data: [
-                        { value: resultados.sueldoNetoAnual, name: 'Sueldo Neto', itemStyle: { color: colors.primary } },
-                        { value: resultados.cuotaSS, name: 'Seguridad Social', itemStyle: { color: colors.accent } },
-                        { value: resultados.retencionIRPF, name: 'IRPF', itemStyle: { color: '#ff6b6b' } }
+                        { value: resultados.sueldoNetoAnual, name: 'Sueldo Neto', itemStyle: { color: seriesColors[0] } },
+                        { value: resultados.cuotaSS, name: 'Seguridad Social', itemStyle: { color: seriesColors[1] } },
+                        { value: resultados.retencionIRPF, name: 'IRPF', itemStyle: { color: seriesColors[2] } }
                     ]
                 }
             ]
@@ -202,6 +239,7 @@ class SalaryCharts {
     }
 
     updateMonthlyComparisonChart(resultados, datos, colors) {
+        const seriesColors = this.getSeriesColors();
         const pagas = datos.numeroPagas;
         const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
         const salarioMensual = resultados.sueldoNetoMensual;
@@ -216,11 +254,17 @@ class SalaryCharts {
 
         const option = {
             backgroundColor: 'transparent',
+            textStyle: {
+                fontFamily: 'Montserrat, sans-serif'
+            },
             tooltip: {
                 trigger: 'axis',
                 formatter: function(params) {
                     const value = Number(params[0].value).toFixed(2);
                     return `${params[0].name}: ${value} €`;
+                },
+                textStyle: {
+                    fontFamily: 'Montserrat, sans-serif'
                 }
             },
             grid: {
@@ -232,14 +276,18 @@ class SalaryCharts {
             xAxis: {
                 type: 'category',
                 data: meses,
-                axisLabel: { color: colors.text },
+                axisLabel: { 
+                    color: colors.text,
+                    fontFamily: 'Montserrat, sans-serif'
+                },
                 axisLine: { lineStyle: { color: colors.axis } }
             },
             yAxis: {
                 type: 'value',
                 axisLabel: { 
                     color: colors.text,
-                    formatter: '{value} €'
+                    formatter: '{value} €',
+                    fontFamily: 'Montserrat, sans-serif'
                 },
                 axisLine: { lineStyle: { color: colors.axis } },
                 splitLine: { lineStyle: { color: colors.grid } }
@@ -253,9 +301,9 @@ class SalaryCharts {
                         color: function(params) {
                             // Resaltar meses con pagas extra
                             if (pagas === 14 && (params.dataIndex === 5 || params.dataIndex === 11)) {
-                                return colors.accent;
+                                return seriesColors[1]; // Color secundario para pagas extra
                             }
-                            return colors.primary;
+                            return seriesColors[0]; // Color primario para salario normal
                         }
                     }
                 }
@@ -265,6 +313,8 @@ class SalaryCharts {
     }
 
     updateIrpfChart(resultados, datos, colors) {
+        const seriesColors = this.getSeriesColors();
+        
         // Simular diferentes tramos de salario para mostrar la progresión del IRPF
         const tramos = [
             { salario: 15000, irpf: this.calcularIRPFSimulado(15000) },
@@ -277,12 +327,18 @@ class SalaryCharts {
 
         const option = {
             backgroundColor: 'transparent',
+            textStyle: {
+                fontFamily: 'Montserrat, sans-serif'
+            },
             tooltip: {
                 trigger: 'axis',
                 formatter: function(params) {
                     const salario = params[0].name;
                     const irpf = Number(params[0].value).toFixed(2);
                     return `Salario: ${salario} €<br/>IRPF: ${irpf}%`;
+                },
+                textStyle: {
+                    fontFamily: 'Montserrat, sans-serif'
                 }
             },
             grid: {
@@ -294,14 +350,19 @@ class SalaryCharts {
             xAxis: {
                 type: 'category',
                 data: tramos.map(t => t.salario.toLocaleString('es-ES')),
-                axisLabel: { color: colors.text, rotate: 45 },
+                axisLabel: { 
+                    color: colors.text, 
+                    rotate: 45,
+                    fontFamily: 'Montserrat, sans-serif'
+                },
                 axisLine: { lineStyle: { color: colors.axis } }
             },
             yAxis: {
                 type: 'value',
                 axisLabel: { 
                     color: colors.text,
-                    formatter: '{value}%'
+                    formatter: '{value}%',
+                    fontFamily: 'Montserrat, sans-serif'
                 },
                 axisLine: { lineStyle: { color: colors.axis } },
                 splitLine: { lineStyle: { color: colors.grid } }
@@ -311,14 +372,23 @@ class SalaryCharts {
                     name: 'Porcentaje IRPF',
                     type: 'line',
                     data: tramos.map(t => t.irpf),
-                    itemStyle: { color: colors.primary },
-                    lineStyle: { color: colors.primary },
+                    itemStyle: { color: seriesColors[0] },
+                    lineStyle: { color: seriesColors[0] },
                     markPoint: {
                         data: [
                             {
                                 coord: [tramos.length - 1, resultados.porcentajeRetencion],
                                 name: 'Tu salario',
-                                itemStyle: { color: colors.accent }
+                                itemStyle: { 
+                                    color: seriesColors[2],
+                                    borderColor: seriesColors[2],
+                                    borderWidth: 2
+                                },
+                                label: {
+                                    color: colors.text,
+                                    fontWeight: 'bold',
+                                    fontFamily: 'Montserrat, sans-serif'
+                                }
                             }
                         ]
                     }
@@ -329,6 +399,8 @@ class SalaryCharts {
     }
 
     updateDeductionsChart(resultados, colors) {
+        const seriesColors = this.getSeriesColors();
+        
         const deducciones = [
             { name: 'IRPF', value: resultados.retencionIRPF },
             { name: 'Seg. Social', value: resultados.cuotaSS }
@@ -336,12 +408,18 @@ class SalaryCharts {
 
         const option = {
             backgroundColor: 'transparent',
+            textStyle: {
+                fontFamily: 'Montserrat, sans-serif'
+            },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: { type: 'shadow' },
                 formatter: function(params) {
                     const value = Number(params[0].value).toFixed(2);
                     return `${params[0].name}: ${value} €`;
+                },
+                textStyle: {
+                    fontFamily: 'Montserrat, sans-serif'
                 }
             },
             grid: {
@@ -355,7 +433,8 @@ class SalaryCharts {
                 axisLabel: { 
                     color: colors.text,
                     formatter: '{value} €',
-                    rotate: 45
+                    rotate: 45,
+                    fontFamily: 'Montserrat, sans-serif'
                 },
                 axisLine: { lineStyle: { color: colors.axis } },
                 splitLine: { lineStyle: { color: colors.grid } }
@@ -365,7 +444,8 @@ class SalaryCharts {
                 data: deducciones.map(d => d.name),
                 axisLabel: { 
                     color: colors.text,
-                    rotate: 45
+                    rotate: 45,
+                    fontFamily: 'Montserrat, sans-serif'
                 },
                 axisLine: { lineStyle: { color: colors.axis } }
             },
@@ -373,12 +453,13 @@ class SalaryCharts {
                 {
                     name: 'Deducciones',
                     type: 'bar',
-                    data: deducciones.map(d => d.value),
-                    itemStyle: {
-                        color: function(params) {
-                            return params.dataIndex === 0 ? '#ff6b6b' : colors.accent;
+                    data: deducciones.map((d, index) => ({
+                        value: d.value,
+                        name: d.name,
+                        itemStyle: {
+                            color: index === 0 ? seriesColors[2] : seriesColors[1] // IRPF: terciario, SS: secundario
                         }
-                    }
+                    }))
                 }
             ]
         };
@@ -386,12 +467,94 @@ class SalaryCharts {
     }
 
     calcularIRPFSimulado(salario) {
-        // Simulación simplificada del cálculo de IRPF
-        if (salario <= 12450) return 9.5;
-        if (salario <= 20200) return 12;
-        if (salario <= 35200) return 15;
-        if (salario <= 60000) return 18.5;
-        return 22.5;
+        // Usar la misma lógica que el calculador principal
+        // Simulamos los cálculos básicos para obtener un porcentaje realista
+        
+        // 1. Cuota de Seguridad Social aproximada (6.35%)
+        const cuotaSS = salario * 0.0635;
+        
+        // 2. Rendimiento neto
+        const rendimientoNeto = salario - cuotaSS;
+        
+        // 3. Reducción básica (simplificada para la simulación)
+        let reduccion = 2000; // Reducción común
+        if (rendimientoNeto < 11250) {
+            reduccion += 3700;
+        } else if (rendimientoNeto < 14450) {
+            reduccion += 3700 - (1.15625 * (rendimientoNeto - 11250));
+        }
+        
+        // 4. Base imponible
+        let baseImponible = Math.max(salario - cuotaSS - reduccion, 0);
+        
+        // 5. Mínimo personal básico (edad media 40 años)
+        const minimoPersonal = 5550;
+        
+        // 6. Obtener comunidad autónoma del formulario actual si existe
+        let comunidadAutonoma = 'E'; // Por defecto estatal
+        const selectComunidad = document.getElementById('comunidad_autonoma');
+        if (selectComunidad && selectComunidad.value) {
+            comunidadAutonoma = selectComunidad.value;
+        }
+        
+        // 7. Cálculo de cuota usando los tramos reales
+        const cuotaTotal = this.calcularTramosBaseLiquidable(baseImponible, comunidadAutonoma) + 
+                          this.calcularTramosBaseLiquidable(baseImponible, 'E');
+        const cuotaMinimos = this.calcularTramosBaseLiquidable(minimoPersonal, comunidadAutonoma) + 
+                            this.calcularTramosBaseLiquidable(minimoPersonal, 'E');
+        
+        const cuotaRetencion = Math.max(cuotaTotal - cuotaMinimos, 0);
+        
+        // 8. Porcentaje de retención
+        const porcentaje = (cuotaRetencion / salario) * 100;
+        
+        return Math.max(porcentaje, 0);
+    }
+
+    // Método auxiliar para calcular tramos (copiado del calculador principal)
+    calcularTramosBaseLiquidable(base, comunidad) {
+        // Usar los mismos tramos que el calculador principal
+        const tramos = window.TRAMOS_AUTONOMICOS ? 
+                      (window.TRAMOS_AUTONOMICOS[comunidad] || window.TRAMOS_AUTONOMICOS['E']) :
+                      this.getTramosBasicos(comunidad);
+        
+        let total = 0;
+        for (let i = 0; i < tramos.length; i++) {
+            let tramo = 0;
+            if (i === tramos.length - 1) {
+                if (base > tramos[i][0]) tramo = base - tramos[i][0];
+            } else {
+                if (base > tramos[i][0]) {
+                    if (base <= tramos[i][1]) tramo = base - tramos[i][0];
+                    else tramo = tramos[i][1] - tramos[i][0];
+                }
+            }
+            tramo = Math.max(tramo, 0);
+            total += (tramo * tramos[i][2]) / 100;
+        }
+        return total;
+    }
+
+    // Tramos básicos como fallback si no están disponibles los globales
+    getTramosBasicos(comunidad) {
+        const tramosBasicos = {
+            'E': [ // Estatal - Tramos oficiales 2025
+                [0, 12450, 9.5], [12450, 20200, 12], [20200, 35200, 15], [35200, 60000, 18.5], [60000, 300000, 22.5], [300000, 999999999999, 24.5]
+            ],
+            '1': [ // Andalucía
+                [0, 12450, 10.5], [12450, 20200, 12], [20200, 28000, 15], [28000, 35200, 16.5], [35200, 50000, 19], [50000, 60000, 19.5], [60000, 120000, 23.5], [120000, 999999999999, 25.5]
+            ],
+            '2': [ // Madrid
+                [0, 12450, 9.5], [12450, 17707, 11.5], [17707, 33007, 15.5], [33007, 53407, 20.5], [53407, 999999999999, 23.5]
+            ],
+            '3': [ // Cataluña
+                [0, 12450, 10.5], [12450, 17707, 12], [17707, 33007, 14], [33007, 53407, 18.5], [53407, 90000, 21.5], [90000, 120000, 23.5], [120000, 175000, 24.5], [175000, 999999999999, 25.5]
+            ],
+            '4': [ // Valencia
+                [0, 12450, 9.5], [12450, 17707, 11], [17707, 33007, 13.5], [33007, 53407, 18], [53407, 999999999999, 21.5]
+            ]
+        };
+        return tramosBasicos[comunidad] || tramosBasicos['E'];
     }
 
     resize() {
