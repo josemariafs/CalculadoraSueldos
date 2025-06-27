@@ -593,3 +593,6 @@ input[type="checkbox"]:not(.checkbox-group input):focus {
     padding: 1.5rem;
   }
 } 
+.chart-note{
+  color:#1b98d0;
+}

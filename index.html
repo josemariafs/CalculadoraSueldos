@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Calculadora Sueldo Neto 2025: Calcular Salario Mensual</title>
-    <meta name="description" content="La calculadora de sueldo neto permite calcular el tipo de retención y el salario neto. En función de tu situación laboral, familiar y retenciones aplicadas, conocerás el sueldo neto del que dispondrás 2025.">
+    <title>Calculadora Retenciones Sueldo 2025: Calcular Retenciones Salariales</title>
+    <meta name="description" content="La calculadora de retenciones de sueldo permite calcular las retenciones aplicadas al salario bruto. En función de tu situación laboral, conocerás las retenciones que se aplican a tu sueldo en 2025.">
     <!-- Google Fonts - Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,7 @@
 <body>
     <div class="main">
         <main class="content">
-            <h1>Calculadora de sueldo neto 2025</h1>
+            <h1>Calculadora de retenciones de sueldo 2025</h1>
 
             <div class="theme-switcher">
                 <button id="theme-toggle" class="theme-toggle-btn" aria-label="Cambiar tema">
@@ -89,29 +89,6 @@
                             <div class="form-group">
                                 <label for="movili">Movilidad geográfica</label>
                                 <input type="checkbox" id="movili" name="movilidad" value="Si">
-                            </div>
-
-                            <div class="form-group" style="display: none;">
-                                <label for="comunidad_autonoma" >Comunidad autónoma</label>
-                                <select name="comunidad_autonoma" id="comunidad_autonoma" class="select-field">
-                                    <option value="1">Andalucía</option>
-                                    <option value="3">Aragón</option>
-                                    <option value="6">Canarias</option>
-                                    <option value="7">Cantabria</option>
-                                    <option value="8">Castilla la Mancha</option>
-                                    <option value="9">Castilla y León</option>
-                                    <option value="10" selected>Cataluña</option>
-                                    <option value="16">Ciudad de Ceuta</option>
-                                    <option value="17">Ciudad de Melilla</option>
-                                    <option value="2">Comunidad de Madrid</option>
-                                    <option value="15">Comunidad Valenciana</option>
-                                    <option value="11">Extremadura</option>
-                                    <option value="12">Galicia</option>
-                                    <option value="5">Islas Baleares</option>
-                                    <option value="14">La Rioja</option>
-                                    <option value="4">Principado de Asturias</option>
-                                    <option value="13">Región de Murcia</option>
-                                </select>
                             </div>
 
                             <div class="form-group">
@@ -194,7 +171,7 @@
                                         <input id="segsocial" type="text" disabled>
                                     </div>
                                     <div class="result-item">
-                                        <label>Retenciones</label>
+                                        <label>Retenciones de Sueldo</label>
                                         <input id="irpf" type="text" disabled>
                                     </div>
                                     <div class="result-item">
@@ -229,11 +206,12 @@
                         <div id="monthlyComparisonChart" class="chart"></div>
                     </div>
                     <div class="chart-item">
-                        <h3>Evolución por Tramos IRPF</h3>
+                        <h3>Evolución por Tramos de Retención</h3>
                         <div id="irpfChart" class="chart"></div>
+                        <p class="chart-note">Nota: El punto correspondiente a tu salario incluye deducciones personales (mínimos, hijos, discapacidad, etc.), mientras que el resto de puntos son teóricos y no aplican deducciones personales.</p>
                     </div>
                     <div class="chart-item">
-                        <h3>Desglose de Deducciones</h3>
+                        <h3>Desglose de Retenciones</h3>
                         <div id="deductionsChart" class="chart"></div>
                     </div>
                 </div>

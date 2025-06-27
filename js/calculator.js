@@ -18,66 +18,18 @@ const CATEGORIAS_PROFESIONALES = {
     K: 'Trabajadores menores de dieciocho años'
 };
 
-// --- Tramos IRPF estatales y autonómicos ---
-const TRAMOS_AUTONOMICOS = {
-    '1': [ // Andalucía
-        [0, 12450, 10.5], [12450, 20200, 12], [20200, 28000, 15], [28000, 35200, 16.5], [35200, 50000, 19], [50000, 60000, 19.5], [60000, 120000, 23.5], [120000, 999999999999, 25.5]
-    ],
-    '2': [ // Madrid
-        [0, 12450, 9.5], [12450, 17707, 11.5], [17707, 33007, 15.5], [33007, 53407, 20.5], [53407, 999999999999, 23.5]
-    ],
-    '3': [ // Cataluña
-        [0, 12450, 10.5], [12450, 17707, 12], [17707, 33007, 14], [33007, 53407, 18.5], [53407, 90000, 21.5], [90000, 120000, 23.5], [120000, 175000, 24.5], [175000, 999999999999, 25.5]
-    ],
-    '4': [ // Valencia
-        [0, 12450, 9.5], [12450, 17707, 11], [17707, 33007, 13.5], [33007, 53407, 18], [53407, 999999999999, 21.5]
-    ],
-    '5': [ // Galicia
-        [0, 12450, 9.5], [12450, 17707, 10], [17707, 33007, 12.8], [33007, 53407, 16], [53407, 999999999999, 19]
-    ],
-    '6': [ // País Vasco
-        [0, 13500, 23], [13500, 21000, 28], [21000, 35000, 32], [35000, 60000, 39], [60000, 999999999999, 43]
-    ],
-    '7': [ // Castilla y León
-        [0, 12450, 9.5], [12450, 17707, 11], [17707, 33007, 13.5], [33007, 53407, 17], [53407, 999999999999, 20]
-    ],
-    '8': [ // Castilla-La Mancha
-        [0, 12450, 9.5], [12450, 17707, 11], [17707, 33007, 13.5], [33007, 53407, 17], [53407, 999999999999, 20]
-    ],
-    '9': [ // Canarias
-        [0, 12450, 9.5], [12450, 17707, 11], [17707, 33007, 13.5], [33007, 53407, 17], [53407, 999999999999, 20]
-    ],
-    '10': [ // Murcia
-        [0, 12450, 9.5], [12450, 17707, 11], [17707, 33007, 13.5], [33007, 53407, 17], [53407, 999999999999, 20]
-    ],
-    '11': [ // Aragón
-        [0, 12450, 10], [12450, 17707, 11], [17707, 33007, 14], [33007, 53407, 17], [53407, 999999999999, 21]
-    ],
-    '12': [ // Extremadura
-        [0, 12450, 9.5], [12450, 17707, 11], [17707, 33007, 13.5], [33007, 53407, 17], [53407, 999999999999, 20]
-    ],
-    '13': [ // Baleares
-        [0, 12450, 10], [12450, 17707, 11.5], [17707, 33007, 14.5], [33007, 53407, 18], [53407, 90000, 22], [90000, 999999999999, 23]
-    ],
-    '14': [ // Asturias
-        [0, 12450, 10], [12450, 17707, 12], [17707, 33007, 14], [33007, 53407, 18], [53407, 999999999999, 21]
-    ],
-    '15': [ // Navarra
-        [0, 15876, 15], [15876, 25000, 20], [25000, 40000, 27], [40000, 70000, 31], [70000, 999999999999, 35]
-    ],
-    '16': [ // Cantabria
-        [0, 12450, 9.5], [12450, 17707, 11], [17707, 33007, 13.5], [33007, 53407, 17], [53407, 999999999999, 20]
-    ],
-    '17': [ // La Rioja
-        [0, 12450, 9.5], [12450, 17707, 11], [17707, 33007, 13.5], [33007, 53407, 17], [53407, 999999999999, 20]
-    ],
-    'E': [ // Estatal - Tramos oficiales 2025
-        [0, 12450, 9.5], [12450, 20200, 12], [20200, 35200, 15], [35200, 60000, 18.5], [60000, 300000, 22.5], [300000, 999999999999, 24.5]
-    ]
-};
+// --- Tramos estatales de retenciones de sueldo 2025 ---
+const TRAMOS_RETENCIONES = [
+    [0, 15000, 7],
+    [15000, 25000, 11],
+    [25000, 35000, 15],
+    [35000, 50000, 19],
+    [50000, 75000, 23],
+    [75000, 999999999999, 27]
+];
 
 // Hacer disponible globalmente para los gráficos
-window.TRAMOS_AUTONOMICOS = TRAMOS_AUTONOMICOS;
+window.TRAMOS_RETENCIONES = TRAMOS_RETENCIONES;
 
 // Clase principal de la calculadora
 class CalculadoraSueldoNeto {
@@ -218,7 +170,6 @@ class CalculadoraSueldoNeto {
             categoriaProfesional: document.getElementById('categoria_profesional').value,
             numeroPagas: document.getElementById('14p').checked ? 14 : 12,
             movilidadGeografica: document.getElementById('movili').checked,
-            comunidadAutonoma: document.getElementById('comunidad_autonoma').value,
             edad: parseInt(document.getElementById('edad').value),
             situacionFamiliar: document.getElementById('situacion_familiar').value,
             discapacidad: document.getElementById('minusvalia_titular').value,
@@ -232,101 +183,115 @@ class CalculadoraSueldoNeto {
         // 1. Seguridad Social
         const cuotaMensual = this.calcularCuotaMensualPagar(datos.salarioBruto, datos.categoriaProfesional);
         const cuotaAnual = cuotaMensual * 12;
-        // 2. Rendimiento neto
-        const rendimientoNeto = datos.salarioBruto - cuotaAnual;
-        // 3. Reducción rendimiento neto
-        let reduccion = this.calcularReduccionRendimientoNeto(rendimientoNeto, datos.movilidadGeografica, datos.discapacidad);
-        if (datos.personasACargo > 2) reduccion += 600;
-        // 4. Base imponible
-        let baseImponible = datos.salarioBruto - cuotaAnual - reduccion;
-        baseImponible = Math.max(baseImponible, 0);
-        // 5. Mínimos personales y familiares (ahora detallados)
-        let hijosMenores25 = 0, hijosMenores3 = 0, descendientesConDiscapacidad33_65 = 0, descendientesConDiscapacidadSup65 = 0;
-        for (const p of datos.personas) {
-            if (p.tipo === 'descendente') {
-                if (p.edad <= 25) hijosMenores25++;
-                if (p.edad <= 3) hijosMenores3++;
-                if (p.discapacidad === 'B') descendientesConDiscapacidad33_65++;
-                if (p.discapacidad === 'C') descendientesConDiscapacidadSup65++;
-            }
+        // 2. Base de cálculo
+        const baseCalculo = datos.salarioBruto - cuotaAnual;
+        // 3. Reducción por rendimientos del trabajo
+        const reduccion = this.calcularReduccionRendimientoTrabajo(baseCalculo, datos);
+        // 4. Base liquidable
+        const baseLiquidable = Math.max(baseCalculo - reduccion, 0);
+        // 5. Mínimos personales y familiares
+        const minimo = this.calcularMinimosPersonalesFamiliares(datos);
+        // 6. Cuota íntegra (solo tramos estatales)
+        const cuotaIntegra = this.aplicarTramosIRPF(baseLiquidable);
+        // 7. Cuota por mínimos
+        const cuotaMinimos = this.aplicarTramosIRPF(minimo);
+        // 8. Cuota de retención
+        const cuotaRetencion = Math.max(cuotaIntegra - cuotaMinimos, 0);
+        // 9. Tipo de retención
+        const tipoRetencion = (cuotaRetencion / datos.salarioBruto) * 100;
+        // 10. Sueldo neto
+        const sueldoNeto = datos.salarioBruto - cuotaAnual - cuotaRetencion;
+        // 11. Pagas
+        let sueldoNetoMensual, pagasExtra;
+        if (datos.numeroPagas === 14) {
+            pagasExtra = (datos.salarioBruto - cuotaRetencion) / 14;
+            sueldoNetoMensual = pagasExtra - (cuotaAnual / 12);
+        } else {
+            sueldoNetoMensual = sueldoNeto / 12;
+            pagasExtra = null;
         }
-        const minimoPersonal = this.calcularMinimoPersonal(datos.edad);
-        const minimoDescendientes = this.calcularMinimoDescendientes(hijosMenores25);
-        const minimoHijosBeneficiarios = datos.hijosExclusiva ? minimoDescendientes : (minimoDescendientes / 2);
-        const minimoHijosMenores3 = hijosMenores3 * 2800;
-        const minimoHijosMenores3Beneficiarios = datos.hijosExclusiva ? minimoHijosMenores3 : (minimoHijosMenores3 / 2);
-        const minimoDescDiscapacidad33_65 = descendientesConDiscapacidad33_65 * 3000;
-        const minimoDescDiscapacidad33_65Beneficiarios = datos.hijosExclusiva ? minimoDescDiscapacidad33_65 : (minimoDescDiscapacidad33_65 / 2);
-        const minimoDescDiscapacidadSup65 = descendientesConDiscapacidadSup65 * 12000;
-        const minimoDescDiscapacidadSup65Beneficiarios = datos.hijosExclusiva ? minimoDescDiscapacidadSup65 : (minimoDescDiscapacidadSup65 / 2);
-        const sumaMinimos = minimoPersonal + minimoHijosBeneficiarios + minimoHijosMenores3Beneficiarios + minimoDescDiscapacidad33_65Beneficiarios + minimoDescDiscapacidadSup65Beneficiarios;
-        // 6. Cuota de retención
-        const cuotaRetencion = (this.calcularTramosBaseLiquidable(baseImponible, datos.comunidadAutonoma) + this.calcularTramosBaseLiquidable(baseImponible, 'E')) - (this.calcularTramosBaseLiquidable(sumaMinimos, datos.comunidadAutonoma) + this.calcularTramosBaseLiquidable(sumaMinimos, 'E'));
-        // 7. Tipo de retención
-        const tipoPrevio = (cuotaRetencion / datos.salarioBruto) * 100;
-        const importePrevioRetencion = (tipoPrevio / 100) * datos.salarioBruto;
-        let tipoFinalRetencion = this.truncateNumber(importePrevioRetencion / datos.salarioBruto * 100, 2);
-        tipoFinalRetencion = Math.max(tipoFinalRetencion, 0);
-        let importeFinalRetencion = (tipoFinalRetencion / 100) * datos.salarioBruto;
-        // 8. Sueldo neto
-        const seguridadSocial = cuotaAnual;
-        let importeRetencion = importeFinalRetencion;
-        let sueldoNeto = datos.salarioBruto - seguridadSocial - importeRetencion;
-        let sueldoNeto12Pagas = sueldoNeto / 12;
-        let pagasExtras = (datos.salarioBruto - importeRetencion) / 14;
-        let salarioMensual = pagasExtras - (seguridadSocial / 12);
-        // 9. Ajuste para contratos inferiores a 12 meses
-        if (datos.tipoContrato === TIPOS_CONTRATO.INFERIOR_12_MESES && tipoFinalRetencion < 2) tipoFinalRetencion = 2;
-        // 10. Resultados
         return {
             sueldoBrutoAnual: datos.salarioBruto,
             sueldoNetoAnual: sueldoNeto,
-            cuotaSS: seguridadSocial,
-            retencionIRPF: importeRetencion,
-            porcentajeRetencion: tipoFinalRetencion,
-            sueldoNetoMensual: datos.numeroPagas === 14 ? salarioMensual : sueldoNeto12Pagas,
-            pagasExtra: datos.numeroPagas === 14 ? pagasExtras : null
+            cuotaSS: cuotaAnual,
+            retencionIRPF: cuotaRetencion,
+            porcentajeRetencion: this.truncateNumber(tipoRetencion, 2),
+            sueldoNetoMensual: sueldoNetoMensual,
+            pagasExtra: pagasExtra
         };
+    }
+
+    calcularReduccionRendimientoTrabajo(baseCalculo, datos) {
+        // Reducción general: 2.000 €
+        let reduccion = 2000;
+        // Reducción adicional para rendimientos bajos (según algoritmo AEAT)
+        if (baseCalculo < 14800) {
+            reduccion += 5650 - (1.14 * (baseCalculo - 11212));
+            if (baseCalculo < 11212) reduccion = 7650;
+        }
+        // Movilidad geográfica: +2000 €
+        if (datos.movilidadGeografica) reduccion += 2000;
+        // Discapacidad titular
+        if (datos.discapacidad === 'B') reduccion += 3500;
+        if (datos.discapacidad === 'C') reduccion += 7750;
+        return Math.max(reduccion, 0);
+    }
+
+    calcularMinimosPersonalesFamiliares(datos) {
+        // Mínimo personal
+        let minimo = 5550;
+        if (datos.edad > 65 && datos.edad <= 75) minimo += 1150;
+        if (datos.edad > 75) minimo += 918 + 1400;
+        // Mínimo por descendientes
+        const descendientes = datos.personas.filter(p => p.tipo === 'descendente');
+        if (descendientes.length > 0) {
+            const edades = descendientes.map(p => p.edad).sort((a, b) => a - b);
+            if (edades[0] !== undefined) minimo += 2400;
+            if (edades[1] !== undefined) minimo += 2700;
+            if (edades[2] !== undefined) minimo += 4000;
+            if (edades[3] !== undefined) minimo += 4500;
+            if (edades.length > 4) minimo += 4500 * (edades.length - 4);
+        }
+        // Mínimo por ascendientes
+        const ascendientes = datos.personas.filter(p => p.tipo === 'ascendente');
+        if (ascendientes.length > 0) minimo += 1150 * ascendientes.length;
+        // Mínimo por discapacidad titular
+        if (datos.discapacidad === 'B') minimo += 3500;
+        if (datos.discapacidad === 'C') minimo += 7800;
+        // Mínimo por discapacidad descendientes/ascendientes
+        for (const p of datos.personas) {
+            if (p.discapacidad === 'B') minimo += 3000;
+            if (p.discapacidad === 'C') minimo += 12000;
+        }
+        // Mínimo por hijos menores de 3 años
+        const hijosMenores3 = descendientes.filter(p => p.edad <= 3).length;
+        minimo += hijosMenores3 * 2800;
+        return minimo;
+    }
+
+    aplicarTramosIRPF(base) {
+        const tramos = TRAMOS_RETENCIONES;
+        let total = 0;
+        for (let i = 0; i < tramos.length; i++) {
+            let tramo = 0;
+            if (i === tramos.length - 1) {
+                if (base > tramos[i][0]) tramo = base - tramos[i][0];
+            } else {
+                if (base > tramos[i][0]) {
+                    if (base <= tramos[i][1]) tramo = base - tramos[i][0];
+                    else tramo = tramos[i][1] - tramos[i][0];
+                }
+            }
+            tramo = Math.max(tramo, 0);
+            total += (tramo * tramos[i][2]) / 100;
+        }
+        return total;
     }
 
     calcularCuotaSS(datos) {
         // Implementación del cálculo de cuota de Seguridad Social
         const porcentajeSS = 0.0635; // 6.35% para 2025
         return datos.salarioBruto * porcentajeSS;
-    }
-
-    calcularRetencionIRPF(datos) {
-        // Implementación del cálculo de retención IRPF
-        // Aquí se mantiene la lógica original de cálculo
-        let porcentajeIRPF = 0;
-
-        // Cálculo base según salario
-        if (datos.salarioBruto <= 12450) {
-            porcentajeIRPF = 0.095;
-        } else if (datos.salarioBruto <= 20200) {
-            porcentajeIRPF = 0.12;
-        } else if (datos.salarioBruto <= 35200) {
-            porcentajeIRPF = 0.15;
-        } else if (datos.salarioBruto <= 60000) {
-            porcentajeIRPF = 0.18;
-        } else if (datos.salarioBruto <= 300000) {
-            porcentajeIRPF = 0.22;
-        } else {
-            porcentajeIRPF = 0.24;
-        }
-
-        // Ajustes según situación personal
-        if (datos.personasACargo > 0) {
-            porcentajeIRPF -= 0.01 * datos.personasACargo;
-        }
-
-        if (datos.discapacidad === 'B') {
-            porcentajeIRPF -= 0.02;
-        } else if (datos.discapacidad === 'C') {
-            porcentajeIRPF -= 0.03;
-        }
-
-        return datos.salarioBruto * Math.max(porcentajeIRPF, 0.02);
     }
 
     mostrarResultados(resultados) {
@@ -412,39 +377,8 @@ class CalculadoraSueldoNeto {
         }
     }
 
-    calcularReduccionRendimientoNeto(rendimientoNeto, movilidadGeografica, minusvaliaTitular) {
-        let reduccionComun = 2000;
-        let reduccionRendimientoNeto = 0;
-        if (rendimientoNeto < 11250) {
-            reduccionRendimientoNeto = 3700;
-        } else if (rendimientoNeto >= 14450) {
-            reduccionRendimientoNeto = 0;
-        } else {
-            reduccionRendimientoNeto = 3700 - (1.15625 * (rendimientoNeto - 11250));
-        }
-        let incrementoMovilidad = movilidadGeografica ? reduccionRendimientoNeto : 0;
-        let minusvalia33 = minusvaliaTitular === 'B' ? 3500 : 0;
-        let minusvalia65 = minusvaliaTitular === 'C' ? 7750 : 0;
-        return reduccionComun + reduccionRendimientoNeto + incrementoMovilidad + minusvalia33 + minusvalia65;
-    }
-
-    calcularMinimoPersonal(edad) {
-        if (edad <= 65) return 5550;
-        else if (edad > 75) return 5550 + 918 + 1400;
-        else return 5550 + 1150;
-    }
-
-    calcularMinimoDescendientes(hijosMenores25) {
-        if (hijosMenores25 === 0) return 0;
-        if (hijosMenores25 === 1) return 2400;
-        if (hijosMenores25 === 2) return 2400 + 2700;
-        if (hijosMenores25 === 3) return 2400 + 2700 + 4000;
-        if (hijosMenores25 === 4) return 2400 + 2700 + 4000 + 4500;
-        return 2400 + 2700 + 4000 + 4500 + (4500 * (hijosMenores25 - 4));
-    }
-
     calcularTramosBaseLiquidable(base, comunidad) {
-        const tramos = TRAMOS_AUTONOMICOS[comunidad] || TRAMOS_AUTONOMICOS['E'];
+        const tramos = TRAMOS_RETENCIONES[comunidad] || TRAMOS_RETENCIONES['E'];
         let total = 0;
         for (let i = 0; i < tramos.length; i++) {
             let tramo = 0;

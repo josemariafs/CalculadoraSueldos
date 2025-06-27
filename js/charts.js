@@ -159,11 +159,11 @@ class SalaryCharts {
         // 2. Gráfico de comparativa mensual vs anual
         this.updateMonthlyComparisonChart(resultados, datos, colors);
         
-        // 3. Gráfico de tramos IRPF
-        this.updateIrpfChart(resultados, datos, colors);
+        // 3. Gráfico de tramos de retención
+        this.updateRetencionesChart(resultados, datos, colors);
         
-        // 4. Gráfico de deducciones
-        this.updateDeductionsChart(resultados, colors);
+        // 4. Gráfico de retenciones
+        this.updateRetencionesDesgloseChart(resultados, colors);
 
         // Forzar redimensionamiento para ocupar el ancho completo
         setTimeout(() => {
@@ -244,14 +244,20 @@ class SalaryCharts {
         const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
         const salarioMensual = resultados.sueldoNetoMensual;
         const pagaExtra = resultados.pagasExtra || 0;
-        
-        const data = meses.map((mes, index) => {
-            if (pagas === 14 && (index === 5 || index === 11)) { // Junio y Diciembre
-                return salarioMensual + pagaExtra;
+        const retencionMensual = (resultados.retencionIRPF + resultados.cuotaSS) / pagas;
+        const retencionExtra = (resultados.retencionIRPF + resultados.cuotaSS) / pagas; // Se reparte igual
+        // Datos para cada mes
+        const dataNeto = [];
+        const dataRetencion = [];
+        for (let i = 0; i < 12; i++) {
+            if (pagas === 14 && (i === 5 || i === 11)) { // Junio y Diciembre
+                dataNeto.push(salarioMensual + pagaExtra);
+                dataRetencion.push(retencionMensual + retencionExtra);
+            } else {
+                dataNeto.push(salarioMensual);
+                dataRetencion.push(retencionMensual);
             }
-            return salarioMensual;
-        });
-
+        }
         const option = {
             backgroundColor: 'transparent',
             textStyle: {
@@ -259,9 +265,15 @@ class SalaryCharts {
             },
             tooltip: {
                 trigger: 'axis',
+                axisPointer: { type: 'shadow' },
                 formatter: function(params) {
-                    const value = Number(params[0].value).toFixed(2);
-                    return `${params[0].name}: ${value} €`;
+                    let txt = `<b>${params[0].name}</b><br/>`;
+                    params.forEach(p => {
+                        txt += `${p.marker} ${p.seriesName}: <b>${Number(p.value).toFixed(2)} €</b><br/>`;
+                    });
+                    const total = params.reduce((sum, p) => sum + Number(p.value), 0);
+                    txt += `<b>Total: ${total.toFixed(2)} €</b>`;
+                    return txt;
                 },
                 textStyle: {
                     fontFamily: 'Montserrat, sans-serif'
@@ -294,9 +306,19 @@ class SalaryCharts {
             },
             series: [
                 {
-                    name: 'Sueldo Neto Mensual',
+                    name: 'Retenciones',
                     type: 'bar',
-                    data: data,
+                    stack: 'total',
+                    data: dataRetencion,
+                    itemStyle: {
+                        color: seriesColors[2]
+                    }
+                },
+                {
+                    name: 'Sueldo Neto',
+                    type: 'bar',
+                    stack: 'total',
+                    data: dataNeto,
                     itemStyle: {
                         color: function(params) {
                             // Resaltar meses con pagas extra
@@ -312,19 +334,32 @@ class SalaryCharts {
         this.charts.monthlyComparison.setOption(option);
     }
 
-    updateIrpfChart(resultados, datos, colors) {
+    updateRetencionesChart(resultados, datos, colors) {
         const seriesColors = this.getSeriesColors();
-        
-        // Simular diferentes tramos de salario para mostrar la progresión del IRPF
-        const tramos = [
-            { salario: 15000, irpf: this.calcularIRPFSimulado(15000) },
-            { salario: 25000, irpf: this.calcularIRPFSimulado(25000) },
-            { salario: 35000, irpf: this.calcularIRPFSimulado(35000) },
-            { salario: 45000, irpf: this.calcularIRPFSimulado(45000) },
-            { salario: 55000, irpf: this.calcularIRPFSimulado(55000) },
-            { salario: datos.salarioBruto, irpf: resultados.porcentajeRetencion }
+        // Simular diferentes tramos de salario para mostrar la progresión de las retenciones
+        let tramos = [
+            { salario: 15000, retencion: this.calcularRetencionSimulada(15000) },
+            { salario: 25000, retencion: this.calcularRetencionSimulada(25000) },
+            { salario: 35000, retencion: this.calcularRetencionSimulada(35000) },
+            { salario: 45000, retencion: this.calcularRetencionSimulada(45000) },
+            { salario: 55000, retencion: this.calcularRetencionSimulada(55000) }
         ];
-
+        // Insertar el salario del usuario en la posición correcta
+        const salarioUsuario = datos.salarioBruto;
+        const retencionUsuario = resultados.porcentajeRetencion;
+        let insertado = false;
+        for (let i = 0; i < tramos.length; i++) {
+            if (salarioUsuario < tramos[i].salario) {
+                tramos.splice(i, 0, { salario: salarioUsuario, retencion: retencionUsuario });
+                insertado = true;
+                break;
+            }
+        }
+        if (!insertado) {
+            tramos.push({ salario: salarioUsuario, retencion: retencionUsuario });
+        }
+        // Buscar la posición del salario del usuario para el markPoint
+        const idxUsuario = tramos.findIndex(t => t.salario === salarioUsuario);
         const option = {
             backgroundColor: 'transparent',
             textStyle: {
@@ -334,8 +369,8 @@ class SalaryCharts {
                 trigger: 'axis',
                 formatter: function(params) {
                     const salario = params[0].name;
-                    const irpf = Number(params[0].value).toFixed(2);
-                    return `Salario: ${salario} €<br/>IRPF: ${irpf}%`;
+                    const retencion = Number(params[0].value).toFixed(2);
+                    return `Salario: ${salario} €<br/>Retención: ${retencion}%`;
                 },
                 textStyle: {
                     fontFamily: 'Montserrat, sans-serif'
@@ -369,15 +404,15 @@ class SalaryCharts {
             },
             series: [
                 {
-                    name: 'Porcentaje IRPF',
+                    name: 'Porcentaje Retención',
                     type: 'line',
-                    data: tramos.map(t => t.irpf),
+                    data: tramos.map(t => t.retencion),
                     itemStyle: { color: seriesColors[0] },
                     lineStyle: { color: seriesColors[0] },
                     markPoint: {
                         data: [
                             {
-                                coord: [tramos.length - 1, resultados.porcentajeRetencion],
+                                coord: [idxUsuario, retencionUsuario],
                                 name: 'Tu salario',
                                 itemStyle: { 
                                     color: seriesColors[2],
@@ -398,11 +433,11 @@ class SalaryCharts {
         this.charts.irpf.setOption(option);
     }
 
-    updateDeductionsChart(resultados, colors) {
+    updateRetencionesDesgloseChart(resultados, colors) {
         const seriesColors = this.getSeriesColors();
         
-        const deducciones = [
-            { name: 'IRPF', value: resultados.retencionIRPF },
+        const retenciones = [
+            { name: 'Retenciones de Sueldo', value: resultados.retencionIRPF },
             { name: 'Seg. Social', value: resultados.cuotaSS }
         ];
 
@@ -441,7 +476,7 @@ class SalaryCharts {
             },
             yAxis: {
                 type: 'category',
-                data: deducciones.map(d => d.name),
+                data: retenciones.map(d => d.name),
                 axisLabel: { 
                     color: colors.text,
                     rotate: 45,
@@ -451,13 +486,13 @@ class SalaryCharts {
             },
             series: [
                 {
-                    name: 'Deducciones',
+                    name: 'Retenciones',
                     type: 'bar',
-                    data: deducciones.map((d, index) => ({
+                    data: retenciones.map((d, index) => ({
                         value: d.value,
                         name: d.name,
                         itemStyle: {
-                            color: index === 0 ? seriesColors[2] : seriesColors[1] // IRPF: terciario, SS: secundario
+                            color: index === 0 ? seriesColors[2] : seriesColors[1] // Retenciones: terciario, SS: secundario
                         }
                     }))
                 }
@@ -466,95 +501,30 @@ class SalaryCharts {
         this.charts.deductions.setOption(option);
     }
 
-    calcularIRPFSimulado(salario) {
-        // Usar la misma lógica que el calculador principal
+    calcularRetencionSimulada(salario) {
+        // Usar la misma lógica que el calculador principal para retenciones
         // Simulamos los cálculos básicos para obtener un porcentaje realista
         
-        // 1. Cuota de Seguridad Social aproximada (6.35%)
-        const cuotaSS = salario * 0.0635;
+        // Obtener tramos de retenciones estatales
+        const tramos = window.TRAMOS_RETENCIONES;
         
-        // 2. Rendimiento neto
-        const rendimientoNeto = salario - cuotaSS;
+        // Calcular retención por tramos
+        let retencionTotal = 0;
+        let salarioRestante = salario;
         
-        // 3. Reducción básica (simplificada para la simulación)
-        let reduccion = 2000; // Reducción común
-        if (rendimientoNeto < 11250) {
-            reduccion += 3700;
-        } else if (rendimientoNeto < 14450) {
-            reduccion += 3700 - (1.15625 * (rendimientoNeto - 11250));
+        for (let i = 0; i < tramos.length; i++) {
+            const [limiteInferior, limiteSuperior, porcentaje] = tramos[i];
+            
+            if (salarioRestante > limiteInferior) {
+                const baseImponible = Math.min(salarioRestante - limiteInferior, limiteSuperior - limiteInferior);
+                retencionTotal += (baseImponible * porcentaje) / 100;
+            }
         }
         
-        // 4. Base imponible
-        let baseImponible = Math.max(salario - cuotaSS - reduccion, 0);
-        
-        // 5. Mínimo personal básico (edad media 40 años)
-        const minimoPersonal = 5550;
-        
-        // 6. Obtener comunidad autónoma del formulario actual si existe
-        let comunidadAutonoma = 'E'; // Por defecto estatal
-        const selectComunidad = document.getElementById('comunidad_autonoma');
-        if (selectComunidad && selectComunidad.value) {
-            comunidadAutonoma = selectComunidad.value;
-        }
-        
-        // 7. Cálculo de cuota usando los tramos reales
-        const cuotaTotal = this.calcularTramosBaseLiquidable(baseImponible, comunidadAutonoma) + 
-                          this.calcularTramosBaseLiquidable(baseImponible, 'E');
-        const cuotaMinimos = this.calcularTramosBaseLiquidable(minimoPersonal, comunidadAutonoma) + 
-                            this.calcularTramosBaseLiquidable(minimoPersonal, 'E');
-        
-        const cuotaRetencion = Math.max(cuotaTotal - cuotaMinimos, 0);
-        
-        // 8. Porcentaje de retención
-        const porcentaje = (cuotaRetencion / salario) * 100;
+        // Porcentaje de retención
+        const porcentaje = (retencionTotal / salario) * 100;
         
         return Math.max(porcentaje, 0);
-    }
-
-    // Método auxiliar para calcular tramos (copiado del calculador principal)
-    calcularTramosBaseLiquidable(base, comunidad) {
-        // Usar los mismos tramos que el calculador principal
-        const tramos = window.TRAMOS_AUTONOMICOS ? 
-                      (window.TRAMOS_AUTONOMICOS[comunidad] || window.TRAMOS_AUTONOMICOS['E']) :
-                      this.getTramosBasicos(comunidad);
-        
-        let total = 0;
-        for (let i = 0; i < tramos.length; i++) {
-            let tramo = 0;
-            if (i === tramos.length - 1) {
-                if (base > tramos[i][0]) tramo = base - tramos[i][0];
-            } else {
-                if (base > tramos[i][0]) {
-                    if (base <= tramos[i][1]) tramo = base - tramos[i][0];
-                    else tramo = tramos[i][1] - tramos[i][0];
-                }
-            }
-            tramo = Math.max(tramo, 0);
-            total += (tramo * tramos[i][2]) / 100;
-        }
-        return total;
-    }
-
-    // Tramos básicos como fallback si no están disponibles los globales
-    getTramosBasicos(comunidad) {
-        const tramosBasicos = {
-            'E': [ // Estatal - Tramos oficiales 2025
-                [0, 12450, 9.5], [12450, 20200, 12], [20200, 35200, 15], [35200, 60000, 18.5], [60000, 300000, 22.5], [300000, 999999999999, 24.5]
-            ],
-            '1': [ // Andalucía
-                [0, 12450, 10.5], [12450, 20200, 12], [20200, 28000, 15], [28000, 35200, 16.5], [35200, 50000, 19], [50000, 60000, 19.5], [60000, 120000, 23.5], [120000, 999999999999, 25.5]
-            ],
-            '2': [ // Madrid
-                [0, 12450, 9.5], [12450, 17707, 11.5], [17707, 33007, 15.5], [33007, 53407, 20.5], [53407, 999999999999, 23.5]
-            ],
-            '3': [ // Cataluña
-                [0, 12450, 10.5], [12450, 17707, 12], [17707, 33007, 14], [33007, 53407, 18.5], [53407, 90000, 21.5], [90000, 120000, 23.5], [120000, 175000, 24.5], [175000, 999999999999, 25.5]
-            ],
-            '4': [ // Valencia
-                [0, 12450, 9.5], [12450, 17707, 11], [17707, 33007, 13.5], [33007, 53407, 18], [53407, 999999999999, 21.5]
-            ]
-        };
-        return tramosBasicos[comunidad] || tramosBasicos['E'];
     }
 
     resize() {
